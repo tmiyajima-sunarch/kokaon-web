@@ -1,10 +1,11 @@
+import { Heading } from '@chakra-ui/react';
 import { useParams } from 'react-router-dom';
 
 export default function RoomPage() {
   const { roomId } = useParams<'roomId'>();
   assertDefined(roomId, 'roomId');
 
-  return <>RoomPage: {roomId}</>;
+  return <Heading>RoomPage: {roomId}</Heading>;
 }
 
 function assertDefined<T>(

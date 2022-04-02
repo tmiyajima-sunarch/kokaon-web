@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { Link, Route, Routes } from 'react-router-dom';
+import { Link as RouterLink, Route, Routes } from 'react-router-dom';
+import { Link } from '@chakra-ui/react';
 
 const IndexPage = lazy(() => import('./pages/IndexPage'));
 const RoomPage = lazy(() => import('./pages/RoomPage'));
@@ -13,7 +14,13 @@ function App() {
       <Suspense fallback="Loading...">
         <div>
           <div>
-            <Link to="/">Home</Link>|<Link to="/room/abc">Room</Link>
+            <Link as={RouterLink} to="/">
+              Home
+            </Link>
+            |
+            <Link as={RouterLink} to="/room/abc">
+              Room
+            </Link>
           </div>
           <Routes>
             <Route path="/" element={<IndexPage />} />

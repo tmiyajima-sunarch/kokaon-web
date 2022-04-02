@@ -1,3 +1,5 @@
+import { Heading } from '@chakra-ui/react';
+
 export default function IndexPage() {
-  return <>IndexPage</>;
+  return <Heading>IndexPage</Heading>;
 }
