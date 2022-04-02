@@ -17,6 +17,7 @@ import {
 } from '@chakra-ui/react';
 import { useCallback } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 
 export type CreateRoomModalProps = {} & Omit<ModalProps, 'children'>;
 
@@ -35,14 +36,15 @@ export default function CreateRoomModal({
     formState: { errors, isSubmitting, isSubmitted },
   } = useForm<FormValues>();
 
-  const onSubmit = useCallback((values: FormValues) => {
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        alert(JSON.stringify(values, null, 2));
-        resolve();
-      }, 3000);
-    });
-  }, []);
+  const navigate = useNavigate();
+
+  const onSubmit = useCallback(
+    async (values: FormValues) => {
+      const roomId = await createRoom(values);
+      navigate(`/room/${roomId}`);
+    },
+    [navigate]
+  );
 
   const handleClose = useCallback(() => {
     reset();
@@ -89,4 +91,18 @@ export default function CreateRoomModal({
       </ModalContent>
     </Modal>
   );
+}
+
+async function createRoom({ name }: FormValues): Promise<string> {
+  const res = await fetch('http://localhost:8080/api/v1/room', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name }),
+  });
+
+  const { roomId } = await res.json();
+
+  return roomId;
 }
