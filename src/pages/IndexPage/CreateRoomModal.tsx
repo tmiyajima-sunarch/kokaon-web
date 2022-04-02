@@ -60,7 +60,7 @@ export default function CreateRoomModal({
         <form onSubmit={handleSubmit(onSubmit)}>
           <ModalBody>
             <FormControl isInvalid={errors.name !== undefined}>
-              <FormLabel htmlFor="input-room-for">ルームの名前</FormLabel>
+              <FormLabel htmlFor="input-room-name">ルームの名前</FormLabel>
               <Input
                 id="input-room-name"
                 autoFocus

@@ -6,9 +6,11 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import CreateRoomModal from './CreateRoomModal';
+import EnterRoomModal from './EnterRoomModal';
 
 export default function IndexPage() {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const createRoomModalDisclosure = useDisclosure();
+  const enterRoomModalDisclosure = useDisclosure();
 
   return (
     <>
@@ -16,16 +18,33 @@ export default function IndexPage() {
         <VStack spacing="16">
           <Heading>Kokaon</Heading>
           <VStack spacing="12">
-            <Button size="lg" w="sm" h="20" onClick={onOpen}>
+            <Button
+              size="lg"
+              w="sm"
+              h="20"
+              onClick={createRoomModalDisclosure.onOpen}
+            >
               ルームを作る
             </Button>
-            <Button size="lg" w="sm" h="20">
+            <Button
+              size="lg"
+              w="sm"
+              h="20"
+              onClick={enterRoomModalDisclosure.onOpen}
+            >
               ルームに参加する
             </Button>
           </VStack>
         </VStack>
       </Container>
-      <CreateRoomModal isOpen={isOpen} onClose={onClose} />
+      <CreateRoomModal
+        isOpen={createRoomModalDisclosure.isOpen}
+        onClose={createRoomModalDisclosure.onClose}
+      />
+      <EnterRoomModal
+        isOpen={enterRoomModalDisclosure.isOpen}
+        onClose={enterRoomModalDisclosure.onClose}
+      />
     </>
   );
 }
