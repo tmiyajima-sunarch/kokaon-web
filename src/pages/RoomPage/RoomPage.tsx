@@ -6,29 +6,27 @@ import {
   useDisclosure,
   VStack,
 } from '@chakra-ui/react';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import AddAudioForm from './AddAudioForm';
 import MemberList from './MemberList';
 import AudioList from './AudioList';
-import { useRoom } from './hooks';
+import { useLocalStorage, useRoom } from './hooks';
 import SetNicknameModal, { SetNicknameModalValues } from './SetNicknameModal';
 
 export default function RoomPage() {
   const { roomId } = useParams<'roomId'>();
   assertDefined(roomId, 'roomId');
 
+  const [nickname, setNickname] = useLocalStorage('nickname', '');
   const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
-
-  const [nickname, setNickname] = useState('test');
 
   const onSubmit = useCallback(
     ({ nickname }: SetNicknameModalValues) => {
-      console.log(nickname);
       setNickname(nickname);
       onClose();
     },
-    [onClose]
+    [onClose, setNickname]
   );
 
   return (
