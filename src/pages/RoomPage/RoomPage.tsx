@@ -1,12 +1,10 @@
 import { Box, Center, Container, Heading, VStack } from '@chakra-ui/react';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useParams } from 'react-router-dom';
-import webstomp from 'webstomp-client';
-import SockJs from '../../sockjs';
-import Room, { State } from '../../room';
 import AddAudioForm from './AddAudioForm';
 import MemberList from './MemberList';
 import AudioList from './AudioList';
+import { useRoom } from './hooks';
 
 export default function RoomPage() {
   const { roomId } = useParams<'roomId'>();
@@ -48,42 +46,6 @@ export default function RoomPage() {
       </VStack>
     </Container>
   );
-}
-
-function useRoom(roomId: string) {
-  const [room, setRoom] = useState<Room | null>(null);
-  const [state, setState] = useState<State | null>(null);
-
-  useEffect(() => {
-    const stompUrl = 'http://localhost:8080/stomp';
-    const socket = new SockJs(stompUrl);
-    const stompClient = webstomp.over(socket);
-    const room = new Room(stompClient, roomId);
-
-    setRoom(room);
-    room.on('change', (state) => setState(state));
-
-    async function init() {
-      await room.connect();
-      await room.init();
-
-      const id = Math.random().toString(32).substring(2);
-
-      room.enter(id, 'test');
-    }
-
-    init();
-
-    return () => {
-      room?.close();
-      setRoom(null);
-    };
-  }, [roomId]);
-
-  return {
-    room,
-    state,
-  };
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
