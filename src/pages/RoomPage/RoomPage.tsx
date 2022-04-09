@@ -12,34 +12,7 @@ export default function RoomPage() {
   const { roomId } = useParams<'roomId'>();
   assertDefined(roomId, 'roomId');
 
-  const [room, setRoom] = useState<Room | null>(null);
-  const [state, setState] = useState<State | null>(null);
-
-  useEffect(() => {
-    const stompUrl = 'http://localhost:8080/stomp';
-    const socket = new SockJs(stompUrl);
-    const stompClient = webstomp.over(socket);
-    const room = new Room(stompClient, roomId);
-
-    setRoom(room);
-    room.on('change', (state) => setState(state));
-
-    async function init() {
-      await room.connect();
-      await room.init();
-
-      const id = Math.random().toString(32).substring(2);
-
-      room.enter(id, 'test');
-    }
-
-    init();
-
-    return () => {
-      room?.close();
-      setRoom(null);
-    };
-  }, [roomId]);
+  const { room, state } = useRoom(roomId);
 
   if (!room || !state || !state.me || !state.room) {
     return <>Loading...</>;
@@ -75,6 +48,42 @@ export default function RoomPage() {
       </VStack>
     </Container>
   );
+}
+
+function useRoom(roomId: string) {
+  const [room, setRoom] = useState<Room | null>(null);
+  const [state, setState] = useState<State | null>(null);
+
+  useEffect(() => {
+    const stompUrl = 'http://localhost:8080/stomp';
+    const socket = new SockJs(stompUrl);
+    const stompClient = webstomp.over(socket);
+    const room = new Room(stompClient, roomId);
+
+    setRoom(room);
+    room.on('change', (state) => setState(state));
+
+    async function init() {
+      await room.connect();
+      await room.init();
+
+      const id = Math.random().toString(32).substring(2);
+
+      room.enter(id, 'test');
+    }
+
+    init();
+
+    return () => {
+      room?.close();
+      setRoom(null);
+    };
+  }, [roomId]);
+
+  return {
+    room,
+    state,
+  };
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
