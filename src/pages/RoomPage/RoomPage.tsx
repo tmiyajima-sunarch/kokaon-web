@@ -1,16 +1,57 @@
-import { Box, Center, Container, Heading, VStack } from '@chakra-ui/react';
-import React from 'react';
+import {
+  Box,
+  Center,
+  Container,
+  Heading,
+  useDisclosure,
+  VStack,
+} from '@chakra-ui/react';
+import React, { useCallback, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import AddAudioForm from './AddAudioForm';
 import MemberList from './MemberList';
 import AudioList from './AudioList';
 import { useRoom } from './hooks';
+import SetNicknameModal, { SetNicknameModalValues } from './SetNicknameModal';
 
 export default function RoomPage() {
   const { roomId } = useParams<'roomId'>();
   assertDefined(roomId, 'roomId');
 
-  const { room, state } = useRoom(roomId);
+  const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
+
+  const [nickname, setNickname] = useState('test');
+
+  const onSubmit = useCallback(
+    ({ nickname }: SetNicknameModalValues) => {
+      console.log(nickname);
+      setNickname(nickname);
+      onClose();
+    },
+    [onClose]
+  );
+
+  return (
+    <>
+      {!isOpen && <RoomDetail roomId={roomId} nickname={nickname} />}
+      <SetNicknameModal
+        isOpen={isOpen}
+        onClose={onClose}
+        defaultValues={{ nickname }}
+        onSubmit={onSubmit}
+      />
+    </>
+  );
+}
+
+function RoomDetail({
+  roomId,
+  nickname,
+}: {
+  roomId: string;
+  nickname: string;
+}) {
+  const { room, state } = useRoom(roomId, nickname);
 
   if (!room || !state || !state.me || !state.room) {
     return <>Loading...</>;

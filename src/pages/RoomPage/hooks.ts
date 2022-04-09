@@ -5,7 +5,7 @@ import Room, { AudioData, State } from '../../room';
 
 const baseUrl = 'http://localhost:8080';
 
-export function useRoom(roomId: string) {
+export function useRoom(roomId: string, nickname: string) {
   const [room, setRoom] = useState<Room | null>(null);
   const [state, setState] = useState<State | null>(null);
 
@@ -24,7 +24,7 @@ export function useRoom(roomId: string) {
 
       const id = Math.random().toString(32).substring(2);
 
-      room.enter(id, 'test');
+      room.enter(id, nickname);
     }
 
     init();
@@ -33,7 +33,7 @@ export function useRoom(roomId: string) {
       room?.close();
       setRoom(null);
     };
-  }, [roomId]);
+  }, [nickname, roomId]);
 
   return {
     room,
