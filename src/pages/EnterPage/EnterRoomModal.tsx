@@ -17,17 +17,22 @@ import {
 } from '@chakra-ui/react';
 import { useCallback } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
 import { useApiClient } from '../../api';
 
-export type EnterRoomModalProps = {} & Omit<ModalProps, 'children'>;
-
-type FormValues = {
+export type EnterRoomModalValues = {
   roomId: string;
   passcode: string;
+  nickname: string;
 };
 
+export type EnterRoomModalProps = {
+  defaultValues: EnterRoomModalValues;
+  onSubmit: (values: EnterRoomModalValues) => void;
+} & Omit<ModalProps, 'children'>;
+
 export default function EnterRoomModal({
+  defaultValues,
+  onSubmit,
   onClose,
   ...modalProps
 }: EnterRoomModalProps) {
@@ -38,17 +43,17 @@ export default function EnterRoomModal({
     setError,
     setFocus,
     formState: { errors, isSubmitting, isSubmitted },
-  } = useForm<FormValues>();
-
-  const navigate = useNavigate();
+  } = useForm<EnterRoomModalValues>({
+    defaultValues,
+  });
 
   const client = useApiClient();
 
-  const onSubmit = useCallback(
-    async ({ roomId, passcode }: FormValues) => {
-      const ok = await client.validateRoom(roomId, passcode);
+  const _onSubmit = useCallback(
+    async (values: EnterRoomModalValues) => {
+      const ok = await client.validateRoom(values.roomId, values.passcode);
       if (ok) {
-        navigate(`/room/${roomId}?p=${passcode}`);
+        onSubmit(values);
       } else {
         setError('passcode', {
           type: 'manual',
@@ -57,7 +62,7 @@ export default function EnterRoomModal({
         setFocus('passcode');
       }
     },
-    [client, navigate, setError, setFocus]
+    [client, onSubmit, setError, setFocus]
   );
 
   const handleClose = useCallback(() => {
@@ -69,15 +74,14 @@ export default function EnterRoomModal({
     <Modal {...modalProps} onClose={handleClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>ルームを作る</ModalHeader>
+        <ModalHeader>ルームに参加する</ModalHeader>
         <ModalCloseButton />
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(_onSubmit)}>
           <ModalBody>
             <FormControl isInvalid={errors.roomId !== undefined}>
               <FormLabel htmlFor="input-room-id">ルームのID</FormLabel>
               <Input
                 id="input-room-id"
-                autoFocus
                 {...register('roomId', {
                   required: '必須入力です',
                 })}
@@ -95,6 +99,7 @@ export default function EnterRoomModal({
               <Input
                 id="input-passcode"
                 type="password"
+                autoComplete="off"
                 {...register('passcode', {
                   required: '必須入力です',
                 })}
@@ -104,6 +109,22 @@ export default function EnterRoomModal({
               ) : (
                 <FormHelperText>
                   ルームのパスコードを入力してください
+                </FormHelperText>
+              )}
+            </FormControl>
+            <FormControl isInvalid={errors.roomId !== undefined}>
+              <FormLabel htmlFor="input-nickname">ニックネーム</FormLabel>
+              <Input
+                id="input-nickname"
+                {...register('nickname', {
+                  required: '必須入力です',
+                })}
+              />
+              {errors.nickname?.message && isSubmitted ? (
+                <FormErrorMessage>{errors.nickname.message}</FormErrorMessage>
+              ) : (
+                <FormHelperText>
+                  あなたのニックネームを指定してください
                 </FormHelperText>
               )}
             </FormControl>

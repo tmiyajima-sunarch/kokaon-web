@@ -1,54 +1,24 @@
-import {
-  Box,
-  Center,
-  Container,
-  Heading,
-  useDisclosure,
-  VStack,
-} from '@chakra-ui/react';
-import React, { useCallback } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { Box, Center, Container, Heading, VStack } from '@chakra-ui/react';
+import React from 'react';
+import { Navigate, useParams } from 'react-router-dom';
 import AudioDropzone from './AudioDropzone';
 import MemberList from './MemberList';
 import AudioList from './AudioList';
-import { useRoom, useLocalStorage } from './hooks';
-import SetNicknameModal, { SetNicknameModalValues } from './SetNicknameModal';
+import { useRoom } from './hooks';
+import { loadLocalStorage } from '../../local-storage';
 
 export default function RoomPage() {
   const { roomId } = useParams<'roomId'>();
   assertDefined(roomId, 'roomId');
 
-  const [search] = useSearchParams();
-  const passcode = search.get('p');
+  const nickname = loadLocalStorage<string>('nickname');
+  const passcode = loadLocalStorage<string>(`passcodes.${roomId}`);
 
-  const [nickname, setNickname] = useLocalStorage('nickname', '');
-  const { isOpen, onClose } = useDisclosure({ defaultIsOpen: true });
-
-  const onSubmit = useCallback(
-    ({ nickname }: SetNicknameModalValues) => {
-      setNickname(nickname);
-      onClose();
-    },
-    [onClose, setNickname]
-  );
-
-  if (!passcode) {
-    return <>パスコードがありません</>;
+  if (!nickname || !passcode) {
+    return <Navigate to={`/enter?p=${roomId}`} />;
   }
 
-  return (
-    <>
-      {!isOpen && (
-        <RoomDetail roomId={roomId} passcode={passcode} nickname={nickname} />
-      )}
-      <SetNicknameModal
-        isOpen={isOpen}
-        onClose={onClose}
-        defaultValues={{ nickname }}
-        onSubmit={onSubmit}
-      />
-    </>
-  );
+  return <RoomDetail roomId={roomId} passcode={passcode} nickname={nickname} />;
 }
 
 function RoomDetail({

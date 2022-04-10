@@ -17,16 +17,17 @@ import {
 } from '@chakra-ui/react';
 import { useCallback } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
-import { useApiClient } from '../../api';
 
-export type CreateRoomModalProps = {} & Omit<ModalProps, 'children'>;
-
-type FormValues = {
+export type CreateRoomModalValues = {
   name: string;
 };
 
+export type CreateRoomModalProps = {
+  onSubmit: (values: CreateRoomModalValues) => Promise<void>;
+} & Omit<ModalProps, 'children'>;
+
 export default function CreateRoomModal({
+  onSubmit,
   onClose,
   ...modalProps
 }: CreateRoomModalProps) {
@@ -35,18 +36,13 @@ export default function CreateRoomModal({
     register,
     reset,
     formState: { errors, isSubmitting, isSubmitted },
-  } = useForm<FormValues>();
+  } = useForm<CreateRoomModalValues>();
 
-  const navigate = useNavigate();
-
-  const client = useApiClient();
-
-  const onSubmit = useCallback(
-    async ({ name }: FormValues) => {
-      const { roomId, passcode } = await client.createRoom(name);
-      navigate(`/room/${roomId}?p=${passcode}`);
+  const _onSubmit = useCallback(
+    async (values: CreateRoomModalValues) => {
+      await onSubmit(values);
     },
-    [client, navigate]
+    [onSubmit]
   );
 
   const handleClose = useCallback(() => {
@@ -60,7 +56,7 @@ export default function CreateRoomModal({
       <ModalContent>
         <ModalHeader>ルームを作る</ModalHeader>
         <ModalCloseButton />
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(_onSubmit)}>
           <ModalBody>
             <FormControl isInvalid={errors.name !== undefined}>
               <FormLabel htmlFor="input-room-name">ルームの名前</FormLabel>
