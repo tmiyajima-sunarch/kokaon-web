@@ -14,6 +14,7 @@ import {
   ModalHeader,
   ModalOverlay,
   ModalProps,
+  VStack,
 } from '@chakra-ui/react';
 import { useCallback, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
@@ -83,59 +84,61 @@ export default function EnterRoomModal({
         <ModalCloseButton />
         <form onSubmit={handleSubmit(_onSubmit)}>
           <ModalBody>
-            <FormControl isInvalid={errors.roomId !== undefined}>
-              <FormLabel htmlFor="input-room-id">ルームのID</FormLabel>
-              <Input
-                id="input-room-id"
-                autoFocus={autoFocusField === 'roomId'}
-                {...register('roomId', {
-                  required: '必須入力です',
-                })}
-              />
-              {errors.roomId?.message && isSubmitted ? (
-                <FormErrorMessage>{errors.roomId.message}</FormErrorMessage>
-              ) : (
-                <FormHelperText>
-                  参加するルームのIDを入力してください
-                </FormHelperText>
-              )}
-            </FormControl>
-            <FormControl isInvalid={errors.passcode !== undefined}>
-              <FormLabel htmlFor="input-passcode">パスコード</FormLabel>
-              <Input
-                id="input-passcode"
-                type="password"
-                autoFocus={autoFocusField === 'passcode'}
-                autoComplete="off"
-                {...register('passcode', {
-                  required: '必須入力です',
-                })}
-              />
-              {errors.passcode?.message && isSubmitted ? (
-                <FormErrorMessage>{errors.passcode.message}</FormErrorMessage>
-              ) : (
-                <FormHelperText>
-                  ルームのパスコードを入力してください
-                </FormHelperText>
-              )}
-            </FormControl>
-            <FormControl isInvalid={errors.roomId !== undefined}>
-              <FormLabel htmlFor="input-nickname">ニックネーム</FormLabel>
-              <Input
-                id="input-nickname"
-                autoFocus={autoFocusField === 'nickname'}
-                {...register('nickname', {
-                  required: '必須入力です',
-                })}
-              />
-              {errors.nickname?.message && isSubmitted ? (
-                <FormErrorMessage>{errors.nickname.message}</FormErrorMessage>
-              ) : (
-                <FormHelperText>
-                  あなたのニックネームを指定してください
-                </FormHelperText>
-              )}
-            </FormControl>
+            <VStack spacing="8">
+              <FormControl isInvalid={errors.roomId !== undefined}>
+                <FormLabel htmlFor="input-room-id">ルームのID</FormLabel>
+                <Input
+                  id="input-room-id"
+                  autoFocus={autoFocusField === 'roomId'}
+                  {...register('roomId', {
+                    required: '必須入力です',
+                  })}
+                />
+                {errors.roomId?.message && isSubmitted ? (
+                  <FormErrorMessage>{errors.roomId.message}</FormErrorMessage>
+                ) : (
+                  <FormHelperText>
+                    参加するルームのIDを入力してください
+                  </FormHelperText>
+                )}
+              </FormControl>
+              <FormControl isInvalid={errors.passcode !== undefined}>
+                <FormLabel htmlFor="input-passcode">パスコード</FormLabel>
+                <Input
+                  id="input-passcode"
+                  type="password"
+                  autoFocus={autoFocusField === 'passcode'}
+                  autoComplete="off"
+                  {...register('passcode', {
+                    required: '必須入力です',
+                  })}
+                />
+                {errors.passcode?.message && isSubmitted ? (
+                  <FormErrorMessage>{errors.passcode.message}</FormErrorMessage>
+                ) : (
+                  <FormHelperText>
+                    ルームのパスコードを入力してください
+                  </FormHelperText>
+                )}
+              </FormControl>
+              <FormControl isInvalid={errors.roomId !== undefined}>
+                <FormLabel htmlFor="input-nickname">ニックネーム</FormLabel>
+                <Input
+                  id="input-nickname"
+                  autoFocus={autoFocusField === 'nickname'}
+                  {...register('nickname', {
+                    required: '必須入力です',
+                  })}
+                />
+                {errors.nickname?.message && isSubmitted ? (
+                  <FormErrorMessage>{errors.nickname.message}</FormErrorMessage>
+                ) : (
+                  <FormHelperText>
+                    あなたのニックネームを指定してください
+                  </FormHelperText>
+                )}
+              </FormControl>
+            </VStack>
           </ModalBody>
           <ModalFooter>
             <HStack>
