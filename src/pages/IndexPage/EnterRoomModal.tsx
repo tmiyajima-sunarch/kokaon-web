@@ -48,7 +48,7 @@ export default function EnterRoomModal({
     async ({ roomId, passcode }: FormValues) => {
       const ok = await client.validateRoom(roomId, passcode);
       if (ok) {
-        navigate(`/room/${roomId}`);
+        navigate(`/room/${roomId}?p=${passcode}`);
       } else {
         setError('passcode', {
           type: 'manual',

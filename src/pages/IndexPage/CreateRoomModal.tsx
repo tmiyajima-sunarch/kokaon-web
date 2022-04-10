@@ -43,8 +43,8 @@ export default function CreateRoomModal({
 
   const onSubmit = useCallback(
     async ({ name }: FormValues) => {
-      const roomId = await client.createRoom(name);
-      navigate(`/room/${roomId}`);
+      const { roomId, passcode } = await client.createRoom(name);
+      navigate(`/room/${roomId}?p=${passcode}`);
     },
     [client, navigate]
   );

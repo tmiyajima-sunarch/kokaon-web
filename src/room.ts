@@ -9,6 +9,7 @@ export type State = {
 
 export type RoomData = {
   id: string;
+  passcode: string;
   name: string;
   members: UserData[];
   audios: AudioData[];
@@ -72,7 +73,8 @@ export default class Room {
 
   constructor(
     private readonly stompClient: StompClient,
-    private readonly roomId: string
+    private readonly roomId: string,
+    private readonly passcode: string
   ) {}
 
   on<K extends Extract<keyof Events, string>>(
@@ -102,17 +104,24 @@ export default class Room {
   init(): Promise<void> {
     return new Promise((resolve) => {
       // Receive initial state
-      this.stompClient.subscribe(`/app/room/${this.roomId}`, (message) => {
-        this.state = { ...this.state, room: JSON.parse(message.body) };
-        this.emitter.emit('change', this.state);
+      this.stompClient.subscribe(
+        `/app/room/${this.roomId}`,
+        (message) => {
+          this.state = { ...this.state, room: JSON.parse(message.body) };
+          this.emitter.emit('change', this.state);
 
-        // Receive events
-        this.stompClient.subscribe(`/topic/room/${this.roomId}`, (message) => {
-          this.handleMessage(JSON.parse(message.body));
-        });
+          // Receive events
+          this.stompClient.subscribe(
+            `/topic/room/${this.roomId}`,
+            (message) => {
+              this.handleMessage(JSON.parse(message.body));
+            }
+          );
 
-        resolve();
-      });
+          resolve();
+        },
+        { passcode: this.passcode }
+      );
     });
   }
 

@@ -3,7 +3,10 @@ import { ApiClient } from './types';
 export class ApiClientImpl implements ApiClient {
   constructor(public readonly baseUrl: string) {}
 
-  async createRoom(name: string): Promise<string> {
+  async createRoom(name: string): Promise<{
+    roomId: string;
+    passcode: string;
+  }> {
     const res = await fetch(`${this.baseUrl}/api/v1/room`, {
       method: 'POST',
       headers: {
@@ -12,9 +15,9 @@ export class ApiClientImpl implements ApiClient {
       body: JSON.stringify({ name }),
     });
 
-    const { roomId } = await res.json();
+    const { roomId, passcode } = await res.json();
 
-    return roomId;
+    return { roomId, passcode };
   }
 
   async validateRoom(roomId: string, passcode: string): Promise<boolean> {

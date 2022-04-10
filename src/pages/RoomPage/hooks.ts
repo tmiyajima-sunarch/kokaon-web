@@ -5,7 +5,7 @@ import Room, { AudioData, State } from '../../room';
 
 const baseUrl = 'http://localhost:8080';
 
-export function useRoom(roomId: string, nickname: string) {
+export function useRoom(roomId: string, passcode: string, nickname: string) {
   const [room, setRoom] = useState<Room | null>(null);
   const [state, setState] = useState<State | null>(null);
 
@@ -13,7 +13,7 @@ export function useRoom(roomId: string, nickname: string) {
     const stompUrl = `${baseUrl}/stomp`;
     const socket = new SockJs(stompUrl);
     const stompClient = webstomp.over(socket);
-    const room = new Room(stompClient, roomId);
+    const room = new Room(stompClient, roomId, passcode);
 
     setRoom(room);
     room.on('change', (state) => setState(state));
@@ -33,7 +33,7 @@ export function useRoom(roomId: string, nickname: string) {
       room?.close();
       setRoom(null);
     };
-  }, [nickname, roomId]);
+  }, [nickname, passcode, roomId]);
 
   return {
     room,
