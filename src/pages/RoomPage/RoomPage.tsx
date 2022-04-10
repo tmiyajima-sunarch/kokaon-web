@@ -8,7 +8,7 @@ import {
 } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import AddAudioForm from './AddAudioForm';
+import AudioDropzone from './AudioDropzone';
 import MemberList from './MemberList';
 import AudioList from './AudioList';
 import { useLocalStorage, useRoom } from './hooks';
@@ -80,7 +80,7 @@ function RoomDetail({
           ) : (
             <AudioList room={room} audios={state.room.audios} />
           )}
-          <AddAudioForm roomId={roomId} />
+          <AudioDropzone roomId={roomId} />
         </VStack>
       </VStack>
     </Container>
