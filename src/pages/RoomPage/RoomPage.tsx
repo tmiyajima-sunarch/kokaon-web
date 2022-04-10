@@ -15,7 +15,7 @@ export default function RoomPage() {
   const passcode = loadLocalStorage<string>(`passcodes.${roomId}`);
 
   if (!nickname || !passcode) {
-    return <Navigate to={`/enter?p=${roomId}`} />;
+    return <Navigate to={`/enter?r=${roomId}`} />;
   }
 
   return <RoomDetail roomId={roomId} passcode={passcode} nickname={nickname} />;

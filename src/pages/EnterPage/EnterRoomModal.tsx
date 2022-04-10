@@ -15,7 +15,7 @@ import {
   ModalOverlay,
   ModalProps,
 } from '@chakra-ui/react';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { useApiClient } from '../../api';
 
@@ -46,6 +46,11 @@ export default function EnterRoomModal({
   } = useForm<EnterRoomModalValues>({
     defaultValues,
   });
+
+  const autoFocusField = useMemo(
+    () => determineAutoFocusField(defaultValues),
+    [defaultValues]
+  );
 
   const client = useApiClient();
 
@@ -82,6 +87,7 @@ export default function EnterRoomModal({
               <FormLabel htmlFor="input-room-id">ルームのID</FormLabel>
               <Input
                 id="input-room-id"
+                autoFocus={autoFocusField === 'roomId'}
                 {...register('roomId', {
                   required: '必須入力です',
                 })}
@@ -99,6 +105,7 @@ export default function EnterRoomModal({
               <Input
                 id="input-passcode"
                 type="password"
+                autoFocus={autoFocusField === 'passcode'}
                 autoComplete="off"
                 {...register('passcode', {
                   required: '必須入力です',
@@ -116,6 +123,7 @@ export default function EnterRoomModal({
               <FormLabel htmlFor="input-nickname">ニックネーム</FormLabel>
               <Input
                 id="input-nickname"
+                autoFocus={autoFocusField === 'nickname'}
                 {...register('nickname', {
                   required: '必須入力です',
                 })}
@@ -143,4 +151,16 @@ export default function EnterRoomModal({
       </ModalContent>
     </Modal>
   );
+}
+
+function determineAutoFocusField(
+  defaultValues: EnterRoomModalValues
+): keyof EnterRoomModalValues {
+  if (!defaultValues.roomId) {
+    return 'roomId';
+  }
+  if (!defaultValues.passcode) {
+    return 'passcode';
+  }
+  return 'nickname';
 }
