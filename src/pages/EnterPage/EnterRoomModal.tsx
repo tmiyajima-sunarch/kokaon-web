@@ -121,7 +121,7 @@ export default function EnterRoomModal({
                   </FormHelperText>
                 )}
               </FormControl>
-              <FormControl isInvalid={errors.roomId !== undefined}>
+              <FormControl isInvalid={errors.nickname !== undefined}>
                 <FormLabel htmlFor="input-nickname">ニックネーム</FormLabel>
                 <Input
                   id="input-nickname"
