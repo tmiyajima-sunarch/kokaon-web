@@ -18,6 +18,7 @@ import {
 import { useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { useApiClient } from '../../api';
 
 export type EnterRoomModalProps = {} & Omit<ModalProps, 'children'>;
 
@@ -41,11 +42,13 @@ export default function EnterRoomModal({
 
   const navigate = useNavigate();
 
+  const client = useApiClient();
+
   const onSubmit = useCallback(
-    async (values: FormValues) => {
-      const ok = await validateRomm(values);
+    async ({ roomId, passcode }: FormValues) => {
+      const ok = await client.validateRoom(roomId, passcode);
       if (ok) {
-        navigate(`/room/${values.roomId}`);
+        navigate(`/room/${roomId}`);
       } else {
         setError('passcode', {
           type: 'manual',
@@ -54,7 +57,7 @@ export default function EnterRoomModal({
         setFocus('passcode');
       }
     },
-    [navigate, setError, setFocus]
+    [client, navigate, setError, setFocus]
   );
 
   const handleClose = useCallback(() => {
@@ -119,24 +122,4 @@ export default function EnterRoomModal({
       </ModalContent>
     </Modal>
   );
-}
-
-async function validateRomm({
-  roomId,
-  passcode,
-}: FormValues): Promise<boolean> {
-  const res = await fetch(
-    `http://localhost:8080/api/v1/room/${roomId}/validate`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ passcode }),
-    }
-  );
-
-  const { ok } = await res.json();
-
-  return ok;
 }

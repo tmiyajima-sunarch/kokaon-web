@@ -9,6 +9,7 @@ import {
 } from '@chakra-ui/react';
 import React, { useCallback } from 'react';
 import { useForm } from 'react-hook-form';
+import { useApiClient } from '../../api';
 
 export type AddAudioFormProps = {
   roomId: string;
@@ -28,6 +29,8 @@ export default function AddAudioForm({ roomId }: AddAudioFormProps) {
     formState: { errors, isSubmitting, isSubmitted },
   } = useForm<FormValues>();
 
+  const client = useApiClient();
+
   const handleFileChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (event.target.files === null || event.target.files.length === 0) {
@@ -41,10 +44,10 @@ export default function AddAudioForm({ roomId }: AddAudioFormProps) {
 
   const onSubmit = useCallback(
     async (values: FormValues) => {
-      await addAudio(roomId, values.file[0], values.name);
+      await client.addAudio(roomId, values.file[0], values.name);
       reset();
     },
-    [reset, roomId]
+    [client, reset, roomId]
   );
 
   return (
@@ -95,19 +98,4 @@ export default function AddAudioForm({ roomId }: AddAudioFormProps) {
       </Button>
     </VStack>
   );
-}
-
-async function addAudio(
-  roomId: string,
-  file: File,
-  name: string
-): Promise<void> {
-  const formData = new FormData();
-  formData.append('name', name);
-  formData.append('audioFile', file);
-
-  await fetch(`http://localhost:8080/room/${roomId}/audios`, {
-    method: 'POST',
-    body: formData,
-  });
 }
