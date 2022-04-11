@@ -15,12 +15,20 @@ export class ApiClientImpl implements ApiClient {
       body: JSON.stringify({ name }),
     });
 
-    const { roomId, passcode } = await res.json();
+    if (!res.ok) {
+      throw new ResponseError(res);
+    }
 
-    return { roomId, passcode };
+    return await res.json();
   }
 
-  async validateRoom(roomId: string, passcode: string): Promise<boolean> {
+  async validateRoom(
+    roomId: string,
+    passcode: string
+  ): Promise<{
+    roomId: string;
+    ok: boolean;
+  }> {
     const res = await fetch(`${this.baseUrl}/api/v1/room/${roomId}/validate`, {
       method: 'POST',
       headers: {
@@ -29,19 +37,54 @@ export class ApiClientImpl implements ApiClient {
       body: JSON.stringify({ passcode }),
     });
 
-    const { ok } = await res.json();
+    if (!res.ok) {
+      throw new ResponseError(res);
+    }
 
-    return ok;
+    return await res.json();
   }
 
-  async addAudio(roomId: string, file: File, name: string): Promise<void> {
+  async addAudio(
+    roomId: string,
+    file: File,
+    name: string
+  ): Promise<{
+    roomId: string;
+    audioId: string;
+    audioName: string;
+  }> {
     const formData = new FormData();
     formData.append('name', name);
     formData.append('audioFile', file);
 
-    await fetch(`${this.baseUrl}/room/${roomId}/audios`, {
+    const res = await fetch(`${this.baseUrl}/room/${roomId}/audios`, {
       method: 'POST',
       body: formData,
     });
+
+    if (!res.ok) {
+      throw new ResponseError(res);
+    }
+
+    return await res.json();
+  }
+}
+
+export class ResponseError extends Error {
+  constructor(
+    public readonly response: Response,
+    message?: string,
+    options?: ErrorOptions
+  ) {
+    super(message ? message : `status code: ${response.status}`, options);
+    this.name = 'ResponseError';
+  }
+
+  get status(): number {
+    return this.response.status;
+  }
+
+  get json(): Promise<any> {
+    return this.response.json();
   }
 }

@@ -57,7 +57,7 @@ export default function EnterRoomModal({
 
   const _onSubmit = useCallback(
     async (values: EnterRoomModalValues) => {
-      const ok = await client.validateRoom(values.roomId, values.passcode);
+      const { ok } = await client.validateRoom(values.roomId, values.passcode);
       if (ok) {
         onSubmit(values);
       } else {
