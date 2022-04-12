@@ -1,3 +1,10 @@
+import {
+  ClientError,
+  ResponseBodyError,
+  ResponseError,
+  ServerError,
+  TransportError,
+} from './errors';
 import { ApiClient } from './types';
 
 export class ApiClientImpl implements ApiClient {
@@ -7,19 +14,15 @@ export class ApiClientImpl implements ApiClient {
     roomId: string;
     passcode: string;
   }> {
-    const res = await fetch(`${this.baseUrl}/api/v1/room`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name }),
-    });
-
-    if (!res.ok) {
-      throw new ResponseError(res);
-    }
-
-    return await res.json();
+    return this.template(() =>
+      fetch(`${this.baseUrl}/api/v1/room`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name }),
+      })
+    );
   }
 
   async validateRoom(
@@ -29,19 +32,15 @@ export class ApiClientImpl implements ApiClient {
     roomId: string;
     ok: boolean;
   }> {
-    const res = await fetch(`${this.baseUrl}/api/v1/room/${roomId}/validate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ passcode }),
-    });
-
-    if (!res.ok) {
-      throw new ResponseError(res);
-    }
-
-    return await res.json();
+    return this.template(() =>
+      fetch(`${this.baseUrl}/api/v1/room/${roomId}/validate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ passcode }),
+      })
+    );
   }
 
   async addAudio(
@@ -53,38 +52,40 @@ export class ApiClientImpl implements ApiClient {
     audioId: string;
     audioName: string;
   }> {
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('audioFile', file);
+    return this.template(() => {
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('audioFile', file);
 
-    const res = await fetch(`${this.baseUrl}/room/${roomId}/audios`, {
-      method: 'POST',
-      body: formData,
+      return fetch(`${this.baseUrl}/room/${roomId}/audios`, {
+        method: 'POST',
+        body: formData,
+      });
     });
+  }
+
+  private async template<T>(call: () => Promise<Response>): Promise<T> {
+    let res: Response;
+    try {
+      res = await call();
+    } catch (e) {
+      throw new TransportError(undefined, { cause: e as Error });
+    }
 
     if (!res.ok) {
+      if (res.status >= 400 && res.status < 500) {
+        throw new ClientError(res);
+      }
+      if (res.status >= 500) {
+        throw new ServerError(res);
+      }
       throw new ResponseError(res);
     }
 
-    return await res.json();
-  }
-}
-
-export class ResponseError extends Error {
-  constructor(
-    public readonly response: Response,
-    message?: string,
-    options?: ErrorOptions
-  ) {
-    super(message ? message : `status code: ${response.status}`, options);
-    this.name = 'ResponseError';
-  }
-
-  get status(): number {
-    return this.response.status;
-  }
-
-  get json(): Promise<any> {
-    return this.response.json();
+    try {
+      return await res.json();
+    } catch (e) {
+      throw new ResponseBodyError(res, undefined, { cause: e as Error });
+    }
   }
 }
