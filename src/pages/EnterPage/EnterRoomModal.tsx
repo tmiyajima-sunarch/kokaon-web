@@ -14,11 +14,12 @@ import {
   ModalHeader,
   ModalOverlay,
   ModalProps,
+  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { useApiClient } from '../../api';
+import { useValidateRoom } from './hooks';
 
 export type EnterRoomModalValues = {
   roomId: string;
@@ -28,7 +29,7 @@ export type EnterRoomModalValues = {
 
 export type EnterRoomModalProps = {
   defaultValues: EnterRoomModalValues;
-  onSubmit: (values: EnterRoomModalValues) => void;
+  onSubmit: (values: EnterRoomModalValues) => Promise<void>;
 } & Omit<ModalProps, 'children'>;
 
 export default function EnterRoomModal({
@@ -48,27 +49,78 @@ export default function EnterRoomModal({
     defaultValues,
   });
 
+  const setFieldError = useCallback(
+    (field: keyof EnterRoomModalValues, message: string) => {
+      setError(field, {
+        type: 'manual',
+        message,
+      });
+      setFocus(field);
+    },
+    [setError, setFocus]
+  );
+
   const autoFocusField = useMemo(
     () => determineAutoFocusField(defaultValues),
     [defaultValues]
   );
 
-  const client = useApiClient();
+  const toast = useToast();
+
+  const showWarnMessage = useCallback(
+    (message: string) => {
+      toast({
+        description: message,
+        status: 'warning',
+        duration: 10000,
+        isClosable: true,
+      });
+    },
+    [toast]
+  );
+
+  const validateRoom = useValidateRoom();
+
+  const random = useCallback((min: number, max: number) => {
+    const range = max - min;
+    const random = Math.random();
+    return random * range + min;
+  }, []);
+
+  const sleep = useCallback(async (timeout: number) => {
+    await new Promise((resolve) => {
+      setTimeout(resolve, timeout);
+    });
+  }, []);
 
   const _onSubmit = useCallback(
     async (values: EnterRoomModalValues) => {
-      const { ok } = await client.validateRoom(values.roomId, values.passcode);
-      if (ok) {
-        onSubmit(values);
-      } else {
-        setError('passcode', {
-          type: 'manual',
-          message: 'パスコードが違います',
-        });
-        setFocus('passcode');
+      const result = await validateRoom(values);
+      switch (result) {
+        case 'success':
+          await onSubmit(values);
+          break;
+        case 'room-not-found':
+          await sleep(random(3000, 5000));
+          setFieldError('roomId', 'ルームがありません');
+          break;
+        case 'invalid-passcode':
+          await sleep(random(3000, 5000));
+          setFieldError('passcode', 'パスコードが違います');
+          break;
+        case 'connection-error':
+          showWarnMessage(
+            '接続エラーが発生しました。しばらく経ってから再度お試しください。'
+          );
+          break;
+        case 'other-error':
+          showWarnMessage(
+            '不明なエラーが発生しました。しばらく経ってから再度お試しください。'
+          );
+          break;
       }
     },
-    [client, onSubmit, setError, setFocus]
+    [onSubmit, random, setFieldError, showWarnMessage, sleep, validateRoom]
   );
 
   const handleClose = useCallback(() => {

@@ -23,7 +23,7 @@ export default function EnterPage() {
   }, [navigate]);
 
   const onSubmit = useCallback(
-    (values: EnterRoomModalValues) => {
+    async (values: EnterRoomModalValues) => {
       saveLocalStorage(`passcodes.${roomId}`, values.passcode);
       setNickname(values.nickname);
       navigate(`/room/${values.roomId}`, {
