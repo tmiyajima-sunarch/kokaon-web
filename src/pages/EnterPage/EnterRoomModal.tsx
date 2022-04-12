@@ -142,6 +142,7 @@ export default function EnterRoomModal({
                 <Input
                   id="input-room-id"
                   autoFocus={autoFocusField === 'roomId'}
+                  disabled={isSubmitting}
                   {...register('roomId', {
                     required: '必須入力です',
                   })}
@@ -161,6 +162,7 @@ export default function EnterRoomModal({
                   type="password"
                   autoFocus={autoFocusField === 'passcode'}
                   autoComplete="off"
+                  disabled={isSubmitting}
                   {...register('passcode', {
                     required: '必須入力です',
                   })}
@@ -178,6 +180,7 @@ export default function EnterRoomModal({
                 <Input
                   id="input-nickname"
                   autoFocus={autoFocusField === 'nickname'}
+                  disabled={isSubmitting}
                   {...register('nickname', {
                     required: '必須入力です',
                   })}

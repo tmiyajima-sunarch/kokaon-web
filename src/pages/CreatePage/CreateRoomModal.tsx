@@ -63,6 +63,7 @@ export default function CreateRoomModal({
               <Input
                 id="input-room-name"
                 autoFocus
+                disabled={isSubmitting}
                 {...register('name', {
                   required: '必須入力です',
                 })}
