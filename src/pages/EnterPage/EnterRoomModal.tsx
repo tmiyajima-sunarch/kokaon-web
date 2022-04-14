@@ -14,11 +14,11 @@ import {
   ModalHeader,
   ModalOverlay,
   ModalProps,
-  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { useCallback, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
+import { useWarnToast } from '../../hooks';
 import { useValidateRoom } from './hooks';
 
 export type EnterRoomModalValues = {
@@ -65,19 +65,7 @@ export default function EnterRoomModal({
     [defaultValues]
   );
 
-  const toast = useToast();
-
-  const showWarnMessage = useCallback(
-    (message: string) => {
-      toast({
-        description: message,
-        status: 'warning',
-        duration: 10000,
-        isClosable: true,
-      });
-    },
-    [toast]
-  );
+  const warnToast = useWarnToast();
 
   const validateRoom = useValidateRoom();
 
@@ -110,18 +98,20 @@ export default function EnterRoomModal({
           setFieldError('passcode', 'パスコードが違います');
           break;
         case 'connection-error':
-          showWarnMessage(
-            '接続エラーが発生しました。しばらく経ってから再度お試しください。'
-          );
+          warnToast({
+            description:
+              '接続エラーが発生しました。しばらく経ってから再度お試しください。',
+          });
           break;
         case 'other-error':
-          showWarnMessage(
-            '不明なエラーが発生しました。しばらく経ってから再度お試しください。'
-          );
+          warnToast({
+            description:
+              '不明なエラーが発生しました。しばらく経ってから再度お試しください。',
+          });
           break;
       }
     },
-    [onSubmit, random, setFieldError, showWarnMessage, sleep, validateRoom]
+    [onSubmit, random, setFieldError, sleep, validateRoom, warnToast]
   );
 
   const handleClose = useCallback(() => {
