@@ -1,13 +1,15 @@
 import AsyncRetry from 'async-retry';
 import { ClientError, ResponseBodyError, TransportError } from './errors';
 
-export async function callApi(
-  action: () => Promise<void>,
+export async function callApi<T>(
+  action: () => Promise<T>,
   opts?: AsyncRetry.Options
-): Promise<void> {
+): Promise<T> {
+  let value: T | undefined = undefined;
+
   await AsyncRetry(async (bail) => {
     try {
-      await action();
+      value = await action();
     } catch (e) {
       if (e instanceof ClientError || e instanceof ResponseBodyError) {
         bail(e);
@@ -20,8 +22,8 @@ export async function callApi(
         bail(e);
         return;
       }
-
-      console.error(e);
     }
   }, opts);
+
+  return value!;
 }

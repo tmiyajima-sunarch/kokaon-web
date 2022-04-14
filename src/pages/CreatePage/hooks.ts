@@ -1,6 +1,4 @@
-import { useToast } from '@chakra-ui/react';
 import { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   callApi,
   ResponseError,
@@ -9,47 +7,32 @@ import {
 } from '../../api';
 import { CreateRoomModalValues } from './CreateRoomModal';
 
+type Result =
+  | {
+      ok: true;
+      roomId: string;
+      passcode: string;
+    }
+  | {
+      ok: false;
+      reason: 'connection-error' | 'other-error';
+    };
+
 export function useCreateRoom() {
-  const navigate = useNavigate();
   const client = useApiClient();
-  const toast = useToast();
-
-  const showInfoMessage = useCallback(
-    (message: string) => {
-      toast({
-        description: message,
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
-      });
-    },
-    [toast]
-  );
-
-  const showWarnMessage = useCallback(
-    (message: string) => {
-      toast({
-        description: message,
-        status: 'warning',
-        duration: 10000,
-        isClosable: true,
-      });
-    },
-    [toast]
-  );
 
   const createRoom = useCallback(
-    async (values: CreateRoomModalValues) => {
+    async (values: CreateRoomModalValues): Promise<Result> => {
       try {
-        await callApi(
+        return await callApi(
           async () => {
             const { roomId, passcode } = await client.createRoom(values.name);
 
-            showInfoMessage('ルームが作成されました');
-
-            navigate(`/enter?r=${roomId}&p=${passcode}`, {
-              replace: true,
-            });
+            return {
+              ok: true,
+              roomId,
+              passcode,
+            };
           },
           { retries: 4 }
         );
@@ -57,19 +40,24 @@ export function useCreateRoom() {
         console.error(e);
 
         if (e instanceof ResponseError) {
-          showWarnMessage(`${e.status}: ${e.message}`);
+          return {
+            ok: false,
+            reason: 'other-error',
+          };
         } else if (e instanceof TransportError) {
-          showWarnMessage(
-            '接続エラーが発生しました。しばらく経ってから再度お試しください。'
-          );
+          return {
+            ok: false,
+            reason: 'connection-error',
+          };
         } else {
-          showWarnMessage(
-            '不明なエラーが発生しました。しばらく経ってから再度お試しください。'
-          );
+          return {
+            ok: false,
+            reason: 'other-error',
+          };
         }
       }
     },
-    [client, navigate, showInfoMessage, showWarnMessage]
+    [client]
   );
 
   return createRoom;

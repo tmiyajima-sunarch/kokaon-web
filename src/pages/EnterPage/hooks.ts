@@ -19,18 +19,15 @@ export function useValidateRoom() {
 
   const validateRoom = useCallback(
     async (values: EnterRoomModalValues): Promise<Result> => {
-      let result: Result = 'success';
-
       try {
-        await callApi(
+        return await callApi(
           async () => {
             const { ok } = await client.validateRoom(
               values.roomId,
               values.passcode
             );
-            if (!ok) {
-              result = 'invalid-passcode';
-            }
+
+            return ok ? 'success' : 'invalid-passcode';
           },
           { retries: 4 }
         );
@@ -40,20 +37,16 @@ export function useValidateRoom() {
         if (e instanceof ResponseError) {
           switch (e.status) {
             case 404:
-              result = 'room-not-found';
-              break;
+              return 'room-not-found';
             default:
-              result = 'other-error';
-              break;
+              return 'other-error';
           }
         } else if (e instanceof TransportError) {
-          result = 'connection-error';
+          return 'connection-error';
         } else {
-          result = 'other-error';
+          return 'other-error';
         }
       }
-
-      return result;
     },
     [client]
   );
