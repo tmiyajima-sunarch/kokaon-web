@@ -12,10 +12,10 @@ export default function AudioDropzone({ roomId }: AudioDropzoneProps) {
   const { getRootProps, getInputProps, isDragAccept } = useDropzone({
     accept: 'audio/*',
     async onDrop(acceptedFiles) {
-      const file = acceptedFiles[0];
-      if (file) {
-        await client.addAudio(roomId, file, file.name);
-      }
+      const promises = acceptedFiles.map((file) => {
+        return client.addAudio(roomId, file, file.name);
+      });
+      await Promise.allSettled(promises);
     },
   });
 
