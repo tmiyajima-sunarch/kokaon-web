@@ -88,6 +88,7 @@ export default function EnterRoomModal({
   }, []);
 
   const sleep = useCallback(async (timeout: number) => {
+    console.log('sleep:', timeout);
     await new Promise((resolve) => {
       setTimeout(resolve, timeout);
     });
@@ -101,11 +102,11 @@ export default function EnterRoomModal({
           await onSubmit(values);
           break;
         case 'room-not-found':
-          await sleep(random(3000, 5000));
+          await sleep(random(500, 1000));
           setFieldError('roomId', 'ルームがありません');
           break;
         case 'invalid-passcode':
-          await sleep(random(3000, 5000));
+          await sleep(random(500, 1000));
           setFieldError('passcode', 'パスコードが違います');
           break;
         case 'connection-error':
