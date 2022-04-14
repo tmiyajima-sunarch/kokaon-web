@@ -1,8 +1,9 @@
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
-import { server } from '../mocks/server';
-import { ApiClientImpl, ResponseError } from './api-client';
-import 'whatwg-fetch';
 import { rest } from 'msw';
+import 'whatwg-fetch';
+import { server } from '../mocks/server';
+import { ApiClientImpl } from './api-client';
+import { ResponseError } from './errors';
 
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
@@ -127,5 +128,52 @@ describe('addAudio', () => {
       audioId: 'audio',
       audioName: 'name',
     });
+  });
+});
+
+describe('removeAudio()', () => {
+  const sut = new ApiClientImpl('http://localhost:8080');
+
+  test('Success', async () => {
+    server.use(
+      rest.delete(
+        'http://localhost:8080/api/v1/room/:roomId/audios/:audioId',
+        (req, res, ctx) => {
+          return res(
+            ctx.status(200),
+            ctx.json({
+              roomId: req.params.roomId,
+              audioId: req.params.audioId,
+            })
+          );
+        }
+      )
+    );
+
+    const result = await sut.removeAudio('test', 'audio');
+
+    expect(result).toEqual({
+      roomId: 'test',
+      audioId: 'audio',
+    });
+  });
+
+  test('Client error', async () => {
+    server.use(
+      rest.delete(
+        'http://localhost:8080/api/v1/room/:roomId/audios/:audioId',
+        (req, res, ctx) => {
+          return res(
+            ctx.status(400),
+            ctx.json({
+              message: 'failure',
+            })
+          );
+        }
+      )
+    );
+
+    const promise = sut.removeAudio('test', 'audio');
+    expect(promise).rejects.toThrowError(ResponseError);
   });
 });

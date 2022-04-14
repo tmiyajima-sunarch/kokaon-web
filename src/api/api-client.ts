@@ -64,6 +64,17 @@ export class ApiClientImpl implements ApiClient {
     });
   }
 
+  async removeAudio(
+    roomId: string,
+    audioId: string
+  ): Promise<{ roomId: string; audioId: string }> {
+    return this.template(() =>
+      fetch(`${this.baseUrl}/api/v1/room/${roomId}/audios/${audioId}`, {
+        method: 'DELETE',
+      })
+    );
+  }
+
   private async template<T>(call: () => Promise<Response>): Promise<T> {
     let res: Response;
     try {

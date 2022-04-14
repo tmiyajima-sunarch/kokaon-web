@@ -21,4 +21,12 @@ export interface ApiClient {
     audioId: string;
     audioName: string;
   }>;
+
+  removeAudio(
+    roomId: string,
+    audioId: string
+  ): Promise<{
+    roomId: string;
+    audioId: string;
+  }>;
 }

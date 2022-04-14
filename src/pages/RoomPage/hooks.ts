@@ -2,6 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import webstomp from 'webstomp-client';
 import SockJs from '../../sockjs';
 import Room, { AudioData, State } from '../../room';
+import {
+  callApi,
+  ResponseError,
+  TransportError,
+  useApiClient,
+} from '../../api';
 
 const baseUrl = 'http://localhost:8080';
 
@@ -132,4 +138,60 @@ export function useAudio(room: Room, audio: AudioData) {
     onPlay,
     onPause,
   };
+}
+
+export function useRemoveAudio() {
+  const client = useApiClient();
+  const [isLoading, setLoading] = useState(false);
+
+  type Result =
+    | {
+        ok: true;
+      }
+    | {
+        ok: false;
+        reason: 'connection-error' | 'other-error';
+      };
+
+  const removeAudio = useCallback(
+    async (roomId: string, audioId: string): Promise<Result> => {
+      setLoading(true);
+      try {
+        return await callApi(
+          async () => {
+            await client.removeAudio(roomId, audioId);
+
+            return {
+              ok: true,
+            };
+          },
+          { retries: 4 }
+        );
+      } catch (e) {
+        console.error(e);
+
+        if (e instanceof ResponseError) {
+          return {
+            ok: false,
+            reason: 'other-error',
+          };
+        } else if (e instanceof TransportError) {
+          return {
+            ok: false,
+            reason: 'connection-error',
+          };
+        } else {
+          return {
+            ok: false,
+            reason: 'other-error',
+          };
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [client]
+  );
+
+  return [removeAudio, isLoading] as const;
 }

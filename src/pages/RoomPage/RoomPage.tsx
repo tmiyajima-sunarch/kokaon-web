@@ -1,5 +1,13 @@
-import { Box, Center, Container, Heading, VStack } from '@chakra-ui/react';
-import React from 'react';
+import {
+  Box,
+  Button,
+  Center,
+  Container,
+  Flex,
+  Heading,
+  VStack,
+} from '@chakra-ui/react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import AudioDropzone from './AudioDropzone';
 import MemberList from './MemberList';
@@ -31,6 +39,19 @@ function RoomDetail({
   nickname: string;
 }) {
   const { room, state } = useRoom(roomId, passcode, nickname);
+  const [isAudioEditing, toggleAudioEditing, setAudioEditing] =
+    useToggle(false);
+
+  useEffect(() => {
+    if (state?.room?.audios.length === 0 && isAudioEditing) {
+      setAudioEditing(false);
+    }
+  }, [
+    isAudioEditing,
+    setAudioEditing,
+    state?.room?.audios.length,
+    toggleAudioEditing,
+  ]);
 
   if (!room || !state || !state.me || !state.room) {
     return <>Loading...</>;
@@ -55,11 +76,27 @@ function RoomDetail({
           )}
         </VStack>
         <VStack spacing="4" alignItems="stretch">
-          <Heading size="sm">効果音</Heading>
+          <Flex justifyContent="space-between" alignItems="center">
+            <Heading size="sm">効果音</Heading>
+            <Button
+              variant="outline"
+              size="xs"
+              colorScheme="blackAlpha"
+              disabled={state.room.audios.length === 0}
+              onClick={toggleAudioEditing}
+            >
+              {isAudioEditing ? '編集の終了' : '編集'}
+            </Button>
+          </Flex>
           {state.room.audios.length === 0 ? (
             <Empty>効果音はありません</Empty>
           ) : (
-            <AudioList room={room} audios={state.room.audios} />
+            <AudioList
+              room={room}
+              roomId={roomId}
+              audios={state.room.audios}
+              isEditing={isAudioEditing}
+            />
           )}
           <AudioDropzone roomId={roomId} />
         </VStack>
@@ -83,4 +120,14 @@ function assertDefined<T>(
   if (value === undefined) {
     throw new Error(`The ${name} is undefined`);
   }
+}
+
+function useToggle(initial: boolean) {
+  const [flag, setFlag] = useState(initial);
+
+  const toggle = useCallback(() => {
+    setFlag((flag) => !flag);
+  }, []);
+
+  return [flag, toggle, setFlag] as const;
 }
