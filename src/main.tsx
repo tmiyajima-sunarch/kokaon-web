@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 import { ChakraProvider, ColorModeScript } from '@chakra-ui/react';
 import { ApiClientProvider } from './api';
 
@@ -12,12 +12,12 @@ const baseUrl =
 ReactDOM.render(
   <React.StrictMode>
     <ChakraProvider>
-      <BrowserRouter>
+      <HashRouter>
         <ColorModeScript />
         <ApiClientProvider baseUrl={baseUrl}>
           <App />
         </ApiClientProvider>
-      </BrowserRouter>
+      </HashRouter>
     </ChakraProvider>
   </React.StrictMode>,
   document.getElementById('root')
