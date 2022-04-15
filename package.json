@@ -48,6 +48,9 @@
     "vitest": "^0.8.2",
     "whatwg-fetch": "^3.6.2"
   },
+  "resolutions": {
+    "csstype": "3.0.10"
+  },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
       "prettier --write"
