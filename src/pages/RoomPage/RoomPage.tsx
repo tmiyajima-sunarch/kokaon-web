@@ -7,8 +7,8 @@ import {
   Heading,
   VStack,
 } from '@chakra-ui/react';
-import React, { useCallback, useEffect, useState } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Navigate, useHref, useParams } from 'react-router-dom';
 import AudioDropzone from './AudioDropzone';
 import MemberList from './MemberList';
 import AudioList from './AudioList';
@@ -42,6 +42,15 @@ function RoomDetail({
   const [isAudioEditing, toggleAudioEditing, setAudioEditing] =
     useToggle(false);
 
+  const href = useHref(`/enter?r=${roomId}&p=${passcode}`);
+  const url = useMemo(
+    () =>
+      `${window.location.protocol}//${window.location.host}${
+        import.meta.env.BASE_URL
+      }${href}`,
+    [href]
+  );
+
   useEffect(() => {
     if (state?.room?.audios.length === 0 && isAudioEditing) {
       setAudioEditing(false);
@@ -66,6 +75,8 @@ function RoomDetail({
           <dd>{state.room.id}</dd>
           <dt>パスコード</dt>
           <dd>{state.room.passcode}</dd>
+          <dt>URL</dt>
+          <dd>{url}</dd>
         </Box>
         <VStack spacing="4" alignItems="stretch">
           <Heading size="sm">メンバー</Heading>
