@@ -1,6 +1,7 @@
 import { Box, Button, Flex, IconButton, Spacer } from '@chakra-ui/react';
 import { useCallback } from 'react';
 import { FaMinusCircle, FaPause, FaPlay } from 'react-icons/fa';
+import { useApiClient } from '../../api';
 import { useWarnToast } from '../../hooks';
 import Room, { AudioData } from '../../room';
 import { useAudio, useRemoveAudio } from './hooks';
@@ -45,8 +46,9 @@ function AudioListItem({
   audio: AudioData;
   isEditing: boolean;
 }) {
+  const client = useApiClient();
   const { isRejected, onAllow, isPlaying, isPlayable, onPause, onPlay } =
-    useAudio(room, audio);
+    useAudio(room, audio, client.baseUrl);
 
   const [removeAudio, isRemoving] = useRemoveAudio();
   const warnToast = useWarnToast();

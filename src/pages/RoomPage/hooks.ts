@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import webstomp from 'webstomp-client';
-import SockJs from '../../sockjs';
 import Room, { AudioData, State } from '../../room';
 import {
   callApi,
@@ -9,17 +7,13 @@ import {
   useApiClient,
 } from '../../api';
 
-const baseUrl = 'http://localhost:8080';
-
 export function useRoom(roomId: string, passcode: string, nickname: string) {
   const [room, setRoom] = useState<Room | null>(null);
   const [state, setState] = useState<State | null>(null);
+  const client = useApiClient();
 
   useEffect(() => {
-    const stompUrl = `${baseUrl}/stomp`;
-    const socket = new SockJs(stompUrl);
-    const stompClient = webstomp.over(socket);
-    const room = new Room(stompClient, roomId, passcode);
+    const room = client.newRoomInstance(roomId, passcode);
 
     setRoom(room);
     room.on('change', (state) => setState(state));
@@ -39,7 +33,7 @@ export function useRoom(roomId: string, passcode: string, nickname: string) {
       room?.close();
       setRoom(null);
     };
-  }, [nickname, passcode, roomId]);
+  }, [client, nickname, passcode, roomId]);
 
   return {
     room,
@@ -47,14 +41,14 @@ export function useRoom(roomId: string, passcode: string, nickname: string) {
   };
 }
 
-export function useAudio(room: Room, audio: AudioData) {
+export function useAudio(room: Room, audio: AudioData, baseUrl: string) {
   const [isPlayable, setPlayable] = useState(false);
   const [isRejected, setRejected] = useState(false);
   const [isPlaying, setPlaying] = useState(false);
 
   const player = useMemo(
     () => new Audio(`${baseUrl}${audio.url}`),
-    [audio.url]
+    [audio.url, baseUrl]
   );
 
   useEffect(() => {
