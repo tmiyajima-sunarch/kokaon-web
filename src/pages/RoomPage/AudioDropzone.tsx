@@ -1,21 +1,37 @@
 import { Box } from '@chakra-ui/react';
 import { useDropzone } from 'react-dropzone';
-import { useApiClient } from '../../api';
+import { useWarnToast } from '../../hooks';
+import { useAddAudios } from './hooks';
 
 export type AudioDropzoneProps = {
   roomId: string;
 };
 
 export default function AudioDropzone({ roomId }: AudioDropzoneProps) {
-  const client = useApiClient();
+  const [addAudios] = useAddAudios();
+  const warnToast = useWarnToast();
 
   const { getRootProps, getInputProps, isDragAccept } = useDropzone({
     accept: 'audio/*',
     async onDrop(acceptedFiles) {
-      const promises = acceptedFiles.map((file) => {
-        return client.addAudio(roomId, file, file.name);
-      });
-      await Promise.allSettled(promises);
+      const result = await addAudios(roomId, acceptedFiles);
+      if (!result.ok) {
+        const hasOtherError = result.results.some(
+          (result) => !result.ok && result.reason === 'other-error'
+        );
+
+        if (hasOtherError) {
+          warnToast({
+            description:
+              '不明なエラーが発生しました。しばらく経ってから再度お試しください。',
+          });
+        } else {
+          warnToast({
+            description:
+              '接続エラーが発生しました。しばらく経ってから再度お試しください。',
+          });
+        }
+      }
     },
   });
 

@@ -140,6 +140,90 @@ export function useAudio(room: Room, audio: AudioData) {
   };
 }
 
+export function useAddAudios() {
+  const client = useApiClient();
+  const [isLoading, setLoading] = useState(false);
+
+  type FileResult =
+    | {
+        ok: true;
+      }
+    | {
+        ok: false;
+        reason: 'connection-error' | 'other-error';
+      };
+
+  type Result =
+    | {
+        ok: true;
+      }
+    | {
+        ok: false;
+        results: FileResult[];
+      };
+
+  const addAudio = useCallback(
+    async (roomId: string, file: File): Promise<FileResult> => {
+      try {
+        return await callApi(
+          async () => {
+            await client.addAudio(roomId, file, file.name);
+
+            return {
+              ok: true,
+            };
+          },
+          { retries: 4 }
+        );
+      } catch (e) {
+        console.error(e);
+
+        if (e instanceof ResponseError) {
+          return {
+            ok: false,
+            reason: 'other-error',
+          };
+        } else if (e instanceof TransportError) {
+          return {
+            ok: false,
+            reason: 'connection-error',
+          };
+        } else {
+          return {
+            ok: false,
+            reason: 'other-error',
+          };
+        }
+      }
+    },
+    [client]
+  );
+
+  const addAudios = useCallback(
+    async (roomId: string, files: File[]): Promise<Result> => {
+      setLoading(true);
+      const promises = files.map((file) => addAudio(roomId, file));
+      const results = await Promise.all(promises);
+      setLoading(false);
+
+      const ok = results.every((result) => result.ok);
+      if (ok) {
+        return {
+          ok: true,
+        };
+      } else {
+        return {
+          ok: false,
+          results: results,
+        };
+      }
+    },
+    [addAudio]
+  );
+
+  return [addAudios, isLoading] as const;
+}
+
 export function useRemoveAudio() {
   const client = useApiClient();
   const [isLoading, setLoading] = useState(false);
