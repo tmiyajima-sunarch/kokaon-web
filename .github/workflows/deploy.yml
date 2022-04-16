@@ -16,7 +16,7 @@ jobs:
       - run: yarn install
       - run: yarn build
         env:
-          VITE_BASE_URL: https://gentle-spire-71560.herokuapp.com
+          VITE_BASE_URL: https://kokaon.herokuapp.com
       - uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
