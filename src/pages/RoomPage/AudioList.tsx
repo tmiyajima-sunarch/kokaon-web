@@ -5,6 +5,7 @@ import { useApiClient } from '../../api';
 import { useWarnToast } from '../../hooks';
 import Room, { AudioData } from '../../room';
 import { useAudio, useRemoveAudio } from './hooks';
+import { List, ListItem } from './List';
 
 export type AudioListProps = {
   room: Room;
@@ -20,18 +21,18 @@ export default function AudioList({
   isEditing = false,
 }: AudioListProps) {
   return (
-    <Box as="ul" listStyleType="none">
+    <List>
       {audios.map((audio) => (
-        <Box key={audio.id} as="li">
+        <ListItem key={audio.id}>
           <AudioListItem
             room={room}
             roomId={roomId}
             audio={audio}
             isEditing={isEditing}
           />
-        </Box>
+        </ListItem>
       ))}
-    </Box>
+    </List>
   );
 }
 
@@ -93,6 +94,8 @@ function AudioListItem({
           disabled={isRejected || isRemoving}
           isLoading={!isPlayable}
           onClick={isPlaying ? onPause : onPlay}
+          colorScheme="blue"
+          variant="ghost"
         />
       )}
       <Box ml="2">{audio.name}</Box>

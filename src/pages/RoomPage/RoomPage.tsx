@@ -1,4 +1,5 @@
 import {
+  Badge,
   Box,
   Button,
   Center,
@@ -7,28 +8,39 @@ import {
   Heading,
   HStack,
   IconButton,
+  Image,
   Input,
   InputGroup,
+  InputGroupProps,
   InputLeftAddon,
   InputRightAddon,
+  Text,
   Tooltip,
   useClipboard,
   VStack,
 } from '@chakra-ui/react';
+import { Helmet } from 'react-helmet';
 import React, {
   ReactNode,
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
-import { Navigate, useHref, useParams } from 'react-router-dom';
+import {
+  Link as RouterLink,
+  Navigate,
+  useHref,
+  useParams,
+} from 'react-router-dom';
 import AudioDropzone from './AudioDropzone';
 import MemberList from './MemberList';
 import AudioList from './AudioList';
 import { useRoom } from './hooks';
 import { loadLocalStorage } from '../../local-storage';
 import { FaCheck, FaCopy } from 'react-icons/fa';
+import icon from '../../icon.svg';
 
 export default function RoomPage() {
   const { roomId } = useParams<'roomId'>();
@@ -73,15 +85,27 @@ function RoomDetail({
   }
 
   return (
-    <Container>
+    <Container py="8">
+      <Helmet>
+        <title>{state.room.name} | Kokaon WEB</title>
+      </Helmet>
       <VStack spacing="8" alignItems="stretch">
-        <Heading>ルーム: {state.room.name}</Heading>
-        <VStack>
-          <HStack>
-            <CopyInput label="ID" value={state.room.id} />
-            <CopyInput label="パスコード" value={state.room.passcode} />
+        <VStack spacing="2" alignItems="stretch">
+          <RoomPageHeader>{state.room.name}</RoomPageHeader>
+          <hr />
+          <HStack spacing="4" alignItems="end">
+            <Text>
+              <Badge>ID</Badge> {state.room.id}
+            </Text>
+            <Text>
+              <Badge>パスコード</Badge> {state.room.passcode}
+            </Text>
           </HStack>
-          <RoomUrlCopyInput label="URL" roomId={roomId} passcode={passcode} />
+        </VStack>
+        <VStack spacing="4" alignItems="stretch">
+          <Heading size="sm">URL</Heading>
+          <Text>参加者にこのURLを共有してください</Text>
+          <RoomUrlCopyInput roomId={roomId} passcode={passcode} size="sm" />
         </VStack>
         <VStack spacing="4" alignItems="stretch">
           <Heading size="sm">メンバー</Heading>
@@ -121,15 +145,34 @@ function RoomDetail({
   );
 }
 
+function RoomPageHeader({ children }: { children: ReactNode }) {
+  return (
+    <Box>
+      <Flex justifyContent="space-between" alignItems="center">
+        <Heading>{children}</Heading>
+        <Tooltip label="退室する">
+          <HStack spacing="2" as={RouterLink} to="/">
+            <Text color="gray.400" fontFamily="mono">
+              Kokaon
+            </Text>
+            <Image src={icon} w="6" />
+          </HStack>
+        </Tooltip>
+      </Flex>
+    </Box>
+  );
+}
+
 function RoomUrlCopyInput({
   label,
   roomId,
   passcode,
+  ...props
 }: {
   label?: ReactNode;
   roomId: string;
   passcode: string;
-}) {
+} & InputGroupProps) {
   const href = useHref(`/enter?r=${roomId}&p=${passcode}`);
   const url = useMemo(
     () =>
@@ -139,20 +182,26 @@ function RoomUrlCopyInput({
     [href]
   );
 
-  return <CopyInput label={label} value={url} />;
+  return <CopyInput label={label} value={url} {...props} />;
 }
 
-function CopyInput({ label, value }: { label?: ReactNode; value: string }) {
+function CopyInput({
+  label,
+  value,
+  size,
+  ...props
+}: { label?: ReactNode; value: string } & InputGroupProps) {
   const { hasCopied, onCopy } = useClipboard(value);
 
   return (
-    <InputGroup>
+    <InputGroup size={size} {...props}>
       {label ? <InputLeftAddon>{label}</InputLeftAddon> : null}
-      <Input type="text" value={value} readOnly />
+      <SelectOnFocusInput type="text" value={value} readOnly />
       <InputRightAddon p="0">
         <Tooltip label="Copy to clipboard">
           <IconButton
             icon={hasCopied ? <FaCheck /> : <FaCopy />}
+            size={size}
             aria-label="コピー"
             onClick={onCopy}
           />
@@ -160,6 +209,25 @@ function CopyInput({ label, value }: { label?: ReactNode; value: string }) {
       </InputRightAddon>
     </InputGroup>
   );
+}
+
+function SelectOnFocusInput({
+  onFocus,
+  ...props
+}: React.ComponentProps<typeof Input>) {
+  const ref = useRef<HTMLInputElement>(null!);
+
+  const handleFocus = useCallback(
+    (e: React.FocusEvent<HTMLInputElement>) => {
+      ref.current.select();
+      if (onFocus) {
+        onFocus(e);
+      }
+    },
+    [onFocus]
+  );
+
+  return <Input ref={ref} onFocus={handleFocus} {...props} />;
 }
 
 function Empty({ children }: { children: React.ReactNode }) {

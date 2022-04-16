@@ -1,5 +1,6 @@
-import { Box } from '@chakra-ui/react';
+import { Avatar, Badge, Box, Spacer } from '@chakra-ui/react';
 import { UserData } from '../../room';
+import { List, ListItem } from './List';
 
 export type MemberListProps = {
   me: UserData;
@@ -8,13 +9,24 @@ export type MemberListProps = {
 
 export default function MemberList({ me, members }: MemberListProps) {
   return (
-    <Box as="ul">
+    <List>
       {members.map((member) => (
-        <li key={member.id}>
-          {member.nickname}
-          {member.id === me?.id ? <span>ME</span> : null}
-        </li>
+        <ListItem
+          key={member.id}
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Avatar name={member.nickname} size="sm" mr="2" />
+          <Box>{member.nickname}</Box>
+          <Spacer />
+          {member.id === me?.id ? (
+            <Badge px="2" py="1" colorScheme="blue">
+              あなた
+            </Badge>
+          ) : null}
+        </ListItem>
       ))}
-    </Box>
+    </List>
   );
 }
