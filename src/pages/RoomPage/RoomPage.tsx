@@ -37,7 +37,7 @@ import {
 import AudioDropzone from './AudioDropzone';
 import MemberList from './MemberList';
 import AudioList from './AudioList';
-import { useRoom } from './hooks';
+import { useRoomClient } from './hooks';
 import { loadLocalStorage } from '../../local-storage';
 import { FaCheck, FaCopy } from 'react-icons/fa';
 import icon from '../../icon.svg';
@@ -65,7 +65,7 @@ function RoomDetail({
   passcode: string;
   nickname: string;
 }) {
-  const { room, state } = useRoom(roomId, passcode, nickname);
+  const { roomClient, state } = useRoomClient(roomId, passcode, nickname);
   const [isAudioEditing, toggleAudioEditing, setAudioEditing] =
     useToggle(false);
 
@@ -80,7 +80,7 @@ function RoomDetail({
     toggleAudioEditing,
   ]);
 
-  if (!room || !state || !state.me || !state.room) {
+  if (!roomClient || !state || !state.me || !state.room) {
     return <>Loading...</>;
   }
 
@@ -132,7 +132,7 @@ function RoomDetail({
             <Empty>効果音はありません</Empty>
           ) : (
             <AudioList
-              room={room}
+              roomClient={roomClient}
               roomId={roomId}
               audios={state.room.audios}
               isEditing={isAudioEditing}

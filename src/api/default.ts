@@ -1,6 +1,3 @@
-import webstomp from 'webstomp-client';
-import SockJs from '../sockjs';
-import Room from '../room';
 import {
   ClientError,
   ResponseBodyError,
@@ -10,15 +7,8 @@ import {
 } from './errors';
 import { ApiClient } from './types';
 
-export class ApiClientImpl implements ApiClient {
+export class DefaultApiClient implements ApiClient {
   constructor(public readonly baseUrl: string) {}
-
-  newRoomInstance(roomId: string, passcode: string): Room {
-    const stompUrl = `${this.baseUrl}/stomp`;
-    const socket = new SockJs(stompUrl);
-    const stompClient = webstomp.over(socket);
-    return new Room(stompClient, roomId, passcode);
-  }
 
   async createRoom(name: string): Promise<{
     roomId: string;

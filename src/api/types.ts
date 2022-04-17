@@ -1,9 +1,5 @@
-import Room from '../room';
-
 export interface ApiClient {
   get baseUrl(): string;
-
-  newRoomInstance(roomId: string, passcode: string): Room;
 
   createRoom(name: string): Promise<{
     roomId: string;
