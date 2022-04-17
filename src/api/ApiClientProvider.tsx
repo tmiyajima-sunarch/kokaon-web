@@ -1,18 +1,16 @@
-import { ReactNode, useMemo } from 'react';
-import { ApiClientImpl } from './api-client';
+import { ReactNode } from 'react';
 import { ApiClientContext } from './context';
+import { ApiClient } from './types';
 
 export type ApiClientProviderProps = {
-  baseUrl: string;
+  client: ApiClient;
   children: ReactNode;
 };
 
 export default function ApiClientProvider({
-  baseUrl,
+  client,
   children,
 }: ApiClientProviderProps) {
-  const client = useMemo(() => new ApiClientImpl(baseUrl), [baseUrl]);
-
   return (
     <ApiClientContext.Provider value={client}>
       {children}

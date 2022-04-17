@@ -7,7 +7,7 @@ import {
 } from './errors';
 import { ApiClient } from './types';
 
-export class ApiClientImpl implements ApiClient {
+export class DefaultApiClient implements ApiClient {
   constructor(public readonly baseUrl: string) {}
 
   async createRoom(name: string): Promise<{

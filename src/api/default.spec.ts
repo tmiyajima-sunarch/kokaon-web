@@ -2,7 +2,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
 import { rest } from 'msw';
 import 'whatwg-fetch';
 import { server } from '../mocks/server';
-import { ApiClientImpl } from './api-client';
+import { DefaultApiClient } from './default';
 import { ResponseError } from './errors';
 
 beforeAll(() => server.listen());
@@ -10,7 +10,7 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe('createRoom()', () => {
-  const sut = new ApiClientImpl('http://localhost:8080');
+  const sut = new DefaultApiClient('http://localhost:8080');
 
   test('Success', async () => {
     server.use(
@@ -51,7 +51,7 @@ describe('createRoom()', () => {
 });
 
 describe('validateRoom()', () => {
-  const sut = new ApiClientImpl('http://localhost:8080');
+  const sut = new DefaultApiClient('http://localhost:8080');
 
   test('Success', async () => {
     server.use(
@@ -98,7 +98,7 @@ describe('validateRoom()', () => {
 });
 
 describe('addAudio', () => {
-  const sut = new ApiClientImpl('http://localhost:8080');
+  const sut = new DefaultApiClient('http://localhost:8080');
 
   test('Success', async () => {
     server.use(
@@ -132,7 +132,7 @@ describe('addAudio', () => {
 });
 
 describe('removeAudio()', () => {
-  const sut = new ApiClientImpl('http://localhost:8080');
+  const sut = new DefaultApiClient('http://localhost:8080');
 
   test('Success', async () => {
     server.use(

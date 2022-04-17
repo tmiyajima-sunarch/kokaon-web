@@ -6,10 +6,13 @@ import { ChakraProvider, ColorModeScript } from '@chakra-ui/react';
 import { ApiClientProvider } from './api';
 import { StompRoomClientFactory } from './api/room';
 import RoomClientFactoryProvider from './api/room/RoomClientFactoryProvider';
+import { DefaultApiClient } from './api';
 
 const baseUrl =
   (import.meta.env.VITE_BASE_URL as string | undefined) ||
   'http://localhost:8080';
+
+const apiClient = new DefaultApiClient(baseUrl);
 
 const stompUrl =
   (import.meta.env.VITE_STOMP_URL as string | undefined) || `${baseUrl}/stomp`;
@@ -21,7 +24,7 @@ ReactDOM.render(
     <ChakraProvider>
       <HashRouter>
         <ColorModeScript />
-        <ApiClientProvider baseUrl={baseUrl}>
+        <ApiClientProvider client={apiClient}>
           <RoomClientFactoryProvider factory={roomClientFactory}>
             <App />
           </RoomClientFactoryProvider>
