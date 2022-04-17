@@ -1,5 +1,5 @@
 import { Avatar, Badge, Box, Spacer } from '@chakra-ui/react';
-import { UserData } from '../../room';
+import { UserData } from '../../api/room';
 import { List, ListItem } from './List';
 
 export type MemberListProps = {

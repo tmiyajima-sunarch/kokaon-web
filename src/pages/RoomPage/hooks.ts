@@ -1,21 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import Room, { AudioData, State } from '../../room';
 import {
   callApi,
   ResponseError,
   TransportError,
   useApiClient,
 } from '../../api';
+import { useRoomClientFactory } from '../../api/room/hooks';
+import { AudioData, RoomClient, RoomClientState } from '../../api/room';
 
-export function useRoom(roomId: string, passcode: string, nickname: string) {
-  const [room, setRoom] = useState<Room | null>(null);
-  const [state, setState] = useState<State | null>(null);
-  const client = useApiClient();
+export function useRoomClient(
+  roomId: string,
+  passcode: string,
+  nickname: string
+) {
+  const [roomClient, setRoomClient] = useState<RoomClient | null>(null);
+  const [state, setState] = useState<RoomClientState | null>(null);
+  const roomClientFactory = useRoomClientFactory();
 
   useEffect(() => {
-    const room = client.newRoomInstance(roomId, passcode);
+    const room = roomClientFactory.create({ roomId, passcode });
 
-    setRoom(room);
+    setRoomClient(room);
     room.on('change', (state) => setState(state));
 
     async function init() {
@@ -31,17 +36,21 @@ export function useRoom(roomId: string, passcode: string, nickname: string) {
 
     return () => {
       room?.close();
-      setRoom(null);
+      setRoomClient(null);
     };
-  }, [client, nickname, passcode, roomId]);
+  }, [nickname, passcode, roomClientFactory, roomId]);
 
   return {
-    room,
+    roomClient,
     state,
   };
 }
 
-export function useAudio(room: Room, audio: AudioData, baseUrl: string) {
+export function useAudio(
+  roomClient: RoomClient,
+  audio: AudioData,
+  baseUrl: string
+) {
   const [isPlayable, setPlayable] = useState(false);
   const [isRejected, setRejected] = useState(false);
   const [isPlaying, setPlaying] = useState(false);
@@ -95,12 +104,12 @@ export function useAudio(room: Room, audio: AudioData, baseUrl: string) {
       }
     };
 
-    room.on('play', onPlay);
+    roomClient.on('play', onPlay);
 
     return () => {
-      room.off('play', onPlay);
+      roomClient.off('play', onPlay);
     };
-  }, [audio.id, audio.name, player, room]);
+  }, [audio.id, audio.name, player, roomClient]);
 
   const onAllow = useCallback(async () => {
     try {
@@ -114,8 +123,8 @@ export function useAudio(room: Room, audio: AudioData, baseUrl: string) {
   }, [player]);
 
   const onPlay = useCallback(() => {
-    room.play(audio.id);
-  }, [audio.id, room]);
+    roomClient.play(audio.id);
+  }, [audio.id, roomClient]);
 
   const onPause = useCallback(() => {
     if (isPlaying) {

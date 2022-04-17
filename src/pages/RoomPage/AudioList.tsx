@@ -2,20 +2,20 @@ import { Box, Button, Flex, IconButton, Spacer } from '@chakra-ui/react';
 import { useCallback } from 'react';
 import { FaMinusCircle, FaPause, FaPlay } from 'react-icons/fa';
 import { useApiClient } from '../../api';
+import { AudioData, RoomClient } from '../../api/room';
 import { useWarnToast } from '../../hooks';
-import Room, { AudioData } from '../../room';
 import { useAudio, useRemoveAudio } from './hooks';
 import { List, ListItem } from './List';
 
 export type AudioListProps = {
-  room: Room;
+  roomClient: RoomClient;
   roomId: string;
   audios: AudioData[];
   isEditing?: boolean;
 };
 
 export default function AudioList({
-  room,
+  roomClient,
   roomId,
   audios,
   isEditing = false,
@@ -25,7 +25,7 @@ export default function AudioList({
       {audios.map((audio) => (
         <ListItem key={audio.id}>
           <AudioListItem
-            room={room}
+            roomClient={roomClient}
             roomId={roomId}
             audio={audio}
             isEditing={isEditing}
@@ -37,19 +37,19 @@ export default function AudioList({
 }
 
 function AudioListItem({
-  room,
+  roomClient,
   roomId,
   audio,
   isEditing,
 }: {
-  room: Room;
+  roomClient: RoomClient;
   roomId: string;
   audio: AudioData;
   isEditing: boolean;
 }) {
   const client = useApiClient();
   const { isRejected, onAllow, isPlaying, isPlayable, onPause, onPlay } =
-    useAudio(room, audio, client.baseUrl);
+    useAudio(roomClient, audio, client.baseUrl);
 
   const [removeAudio, isRemoving] = useRemoveAudio();
   const warnToast = useWarnToast();

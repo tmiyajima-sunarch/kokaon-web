@@ -1,30 +1,13 @@
 import { EventEmitter } from 'events';
 import { TypeSafeEventEmitter } from 'typesafe-event-emitter';
-import { Client as StompClient } from 'webstomp-client';
-
-export type State = {
-  me: UserData | null;
-  room: RoomData | null;
-};
-
-export type RoomData = {
-  id: string;
-  passcode: string;
-  name: string;
-  members: UserData[];
-  audios: AudioData[];
-};
-
-export type UserData = {
-  id: string;
-  nickname: string;
-};
-
-export type AudioData = {
-  id: string;
-  name: string;
-  url: string;
-};
+import webstomp, { Client as StompClient } from 'webstomp-client';
+import SockJs from '../../sockjs';
+import {
+  RoomClient,
+  RoomClientEvents,
+  RoomClientFactory,
+  RoomClientState,
+} from './types';
 
 type Message =
   | {
@@ -56,20 +39,13 @@ type Message =
       audioId: string;
     };
 
-type Events = {
-  change: State;
-  play: {
-    audioId: string;
-  };
-};
-
-export default class Room {
-  state: State = {
+export class StompRoomClient implements RoomClient {
+  state: RoomClientState = {
     me: null,
     room: null,
   };
 
-  emitter: TypeSafeEventEmitter<Events> = new EventEmitter();
+  emitter: TypeSafeEventEmitter<RoomClientEvents> = new EventEmitter();
 
   constructor(
     private readonly stompClient: StompClient,
@@ -77,17 +53,17 @@ export default class Room {
     private readonly passcode: string
   ) {}
 
-  on<K extends Extract<keyof Events, string>>(
+  on<K extends Extract<keyof RoomClientEvents, string>>(
     eventName: K,
-    listener: (arg: Events[K]) => void
+    listener: (arg: RoomClientEvents[K]) => void
   ): this {
     this.emitter.on(eventName, listener);
     return this;
   }
 
-  off<K extends Extract<keyof Events, string>>(
+  off<K extends Extract<keyof RoomClientEvents, string>>(
     eventName: K,
-    listener: (arg: Events[K]) => void
+    listener: (arg: RoomClientEvents[K]) => void
   ): this {
     this.emitter.off(eventName, listener);
     return this;
@@ -157,7 +133,7 @@ export default class Room {
   }
 }
 
-function reducer(state: State, message: Message): State {
+function reducer(state: RoomClientState, message: Message): RoomClientState {
   if (!state.room || state.room.id !== message.roomId) {
     return state;
   }
@@ -252,5 +228,21 @@ function reducer(state: State, message: Message): State {
 function assertMessage(message: unknown): asserts message is Message {
   if (!message || typeof message !== 'object' || !('@type' in message)) {
     throw new Error(`Unknown message: ${JSON.stringify(message)}`);
+  }
+}
+
+export class StompRoomClientFactory implements RoomClientFactory {
+  constructor(public readonly stompUrl: string) {}
+
+  create({
+    roomId,
+    passcode,
+  }: {
+    roomId: string;
+    passcode: string;
+  }): RoomClient {
+    const socket = new SockJs(this.stompUrl);
+    const stompClient = webstomp.over(socket);
+    return new StompRoomClient(stompClient, roomId, passcode);
   }
 }
